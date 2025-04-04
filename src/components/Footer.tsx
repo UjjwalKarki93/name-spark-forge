@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="text-primary font-bold text-lg">
-              NameSparkForge
+              Namerly
             </Link>
             <p className="mt-2 text-sm text-foreground/70">
               Find the perfect name for your startup, business, or gaming profile.
@@ -54,11 +54,6 @@ export function Footer() {
                   Saved Names
                 </Link>
               </li>
-              <li>
-                <a href="#" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Domain Check
-                </a>
-              </li>
             </ul>
           </div>
           
@@ -85,7 +80,7 @@ export function Footer() {
         </div>
         
         <div className="mt-8 pt-4 border-t text-center text-xs text-foreground/60">
-          <p>© {new Date().getFullYear()} NameSparkForge. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Namerly. All rights reserved.</p>
         </div>
       </div>
     </footer>

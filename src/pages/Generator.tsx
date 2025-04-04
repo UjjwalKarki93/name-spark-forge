@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -11,8 +11,9 @@ import { AdSlot } from "@/components/AdSlot";
 import { categories } from "@/components/CategoryCard";
 import { filterByLength, generateNames, searchNames, generateFromPrompt } from "@/utils/nameGenerator";
 import { getPageSeo, updateDocumentMeta } from "@/utils/seo";
-import { RotateCw } from "lucide-react";
+import { Heart, RotateCw } from "lucide-react";
 import { toast } from "sonner";
+import { useFavorites } from "@/hooks/useFavorites";
 
 const Generator = () => {
   const { category = "startup" } = useParams();
@@ -25,6 +26,7 @@ const Generator = () => {
   const [nameStyle, setNameStyle] = useState("any");
   const [usingCustomPrompt, setUsingCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
+  const { favorites } = useFavorites();
 
   // Get category details
   const categoryObj = categories.find(cat => cat.slug === category);
@@ -172,7 +174,7 @@ const Generator = () => {
               onCustomPrompt={generateFromCustomPrompt}
             />
             
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
               <h2 className="text-xl font-semibold">
                 {usingCustomPrompt 
                   ? `Names based on "${customPrompt}"` 
@@ -180,14 +182,28 @@ const Generator = () => {
                     ? `Name Results for "${searchTerm}"` 
                     : "Name Results"}
               </h2>
-              <Button 
-                onClick={generateNewNames}
-                variant="outline"
-                className="flex items-center gap-1"
-              >
-                <RotateCw className="h-4 w-4 mr-1" />
-                Generate New Names
-              </Button>
+              <div className="flex items-center gap-3">
+                {favorites.length > 0 && (
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-1"
+                    asChild
+                  >
+                    <Link to="/favorites">
+                      <Heart className="h-4 w-4 mr-1" />
+                      <span>View Saved Names ({favorites.length})</span>
+                    </Link>
+                  </Button>
+                )}
+                <Button 
+                  onClick={generateNewNames}
+                  variant="outline"
+                  className="flex items-center gap-1"
+                >
+                  <RotateCw className="h-4 w-4 mr-1" />
+                  Generate New Names
+                </Button>
+              </div>
             </div>
             
             <NameList names={names} loading={loading} />

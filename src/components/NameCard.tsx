@@ -64,7 +64,7 @@ export function NameCard({ nameData, isHighlighted = false }: NameCardProps) {
       
       <h3 className="text-xl md:text-2xl font-semibold text-center py-3 px-2">{nameData.name}</h3>
       
-      <div className="flex justify-center gap-2 mt-3">
+      <div className="flex justify-center mt-3">
         <Button 
           variant="outline" 
           size="sm" 
@@ -83,17 +83,6 @@ export function NameCard({ nameData, isHighlighted = false }: NameCardProps) {
               <span>Copy</span>
             </>
           )}
-        </Button>
-        
-        <Button size="sm" asChild>
-          <a 
-            href={`https://www.godaddy.com/domainsearch/find?domainToCheck=${nameData.name.toLowerCase().replace(/\s+/g, '')}.com`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            aria-label="Check domain availability"
-          >
-            Get Domain
-          </a>
         </Button>
       </div>
     </div>

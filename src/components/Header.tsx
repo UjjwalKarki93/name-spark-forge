@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp } from "lucide-react";
+import { Home, TrendingUp, Heart } from "lucide-react";
 
 export function Header() {
   return (
@@ -10,8 +10,8 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2 text-primary font-bold text-lg">
-            <span className="hidden sm:inline-block">NameSparkForge</span>
-            <span className="sm:hidden">NSF</span>
+            <span className="hidden sm:inline-block">Namerly</span>
+            <span className="sm:hidden">NM</span>
           </Link>
         </div>
         
@@ -46,6 +46,13 @@ export function Header() {
           >
             Trending
           </Link>
+          <Link 
+            to="/favorites" 
+            className="text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            <Heart className="h-4 w-4" />
+            Saved Names
+          </Link>
         </nav>
         
         <div className="flex items-center gap-2">
@@ -58,6 +65,11 @@ export function Header() {
             <Link to="/trending">
               <Button variant="ghost" size="icon">
                 <TrendingUp className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/favorites">
+              <Button variant="ghost" size="icon">
+                <Heart className="h-5 w-5" />
               </Button>
             </Link>
           </div>
