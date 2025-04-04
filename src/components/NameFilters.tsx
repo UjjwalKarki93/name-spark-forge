@@ -56,6 +56,8 @@ export function NameFilters({
           />
         </div>
         <Button type="submit">Search</Button>
+        
+        {/* Desktop collapsible filters */}
         <Collapsible 
           open={isOpen} 
           onOpenChange={setIsOpen}
@@ -66,10 +68,77 @@ export function NameFilters({
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
           </CollapsibleTrigger>
+          
+          <CollapsibleContent className="mt-4">
+            <div className="flex flex-wrap gap-4">
+              <div className="w-full sm:w-auto">
+                <label className="text-sm font-medium mb-1 block">Category</label>
+                <Select 
+                  value={category} 
+                  onValueChange={onCategoryChange}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.slug} value={cat.slug}>
+                        {cat.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-1 block">Name Length</label>
+                <Select onValueChange={onLengthChange} defaultValue="any">
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Name length" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any Length</SelectItem>
+                    <SelectItem value="short">Short (1-6 chars)</SelectItem>
+                    <SelectItem value="medium">Medium (7-12 chars)</SelectItem>
+                    <SelectItem value="long">Long (13+ chars)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-1 block">Style</label>
+                <Select onValueChange={onStyleChange} defaultValue="any">
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Name style" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any Style</SelectItem>
+                    <SelectItem value="modern">Modern</SelectItem>
+                    <SelectItem value="classic">Classic</SelectItem>
+                    <SelectItem value="fun">Fun & Playful</SelectItem>
+                    <SelectItem value="tech">Technical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-end ml-auto">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClearFilters}
+                  className="text-muted-foreground"
+                >
+                  <X className="h-4 w-4 mr-1" /> 
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CollapsibleContent>
         </Collapsible>
       </form>
 
-      {/* Always visible on mobile, collapsible on desktop */}
+      {/* Always visible on mobile */}
       <div className="mt-4 md:hidden">
         <div className="flex flex-wrap gap-4">
           <div className="w-full sm:w-auto">
@@ -136,73 +205,6 @@ export function NameFilters({
           </div>
         </div>
       </div>
-      
-      <CollapsibleContent className="mt-4">
-        <div className="flex flex-wrap gap-4">
-          <div className="w-full sm:w-auto">
-            <label className="text-sm font-medium mb-1 block">Category</label>
-            <Select 
-              value={category} 
-              onValueChange={onCategoryChange}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.slug}>
-                    {cat.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium mb-1 block">Name Length</label>
-            <Select onValueChange={onLengthChange} defaultValue="any">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Name length" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Length</SelectItem>
-                <SelectItem value="short">Short (1-6 chars)</SelectItem>
-                <SelectItem value="medium">Medium (7-12 chars)</SelectItem>
-                <SelectItem value="long">Long (13+ chars)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium mb-1 block">Style</label>
-            <Select onValueChange={onStyleChange} defaultValue="any">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Name style" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Style</SelectItem>
-                <SelectItem value="modern">Modern</SelectItem>
-                <SelectItem value="classic">Classic</SelectItem>
-                <SelectItem value="fun">Fun & Playful</SelectItem>
-                <SelectItem value="tech">Technical</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex items-end ml-auto">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClearFilters}
-              className="text-muted-foreground"
-            >
-              <X className="h-4 w-4 mr-1" /> 
-              Clear Filters
-            </Button>
-          </div>
-        </div>
-      </CollapsibleContent>
     </div>
   );
 }
