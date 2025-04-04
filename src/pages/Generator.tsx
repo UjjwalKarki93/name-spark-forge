@@ -9,9 +9,10 @@ import { NameList } from "@/components/NameList";
 import { NameFilters } from "@/components/NameFilters";
 import { AdSlot } from "@/components/AdSlot";
 import { categories } from "@/components/CategoryCard";
-import { filterByLength, generateNames, searchNames } from "@/utils/nameGenerator";
+import { filterByLength, generateNames, searchNames, generateFromPrompt } from "@/utils/nameGenerator";
 import { getPageSeo, updateDocumentMeta } from "@/utils/seo";
 import { RotateCw } from "lucide-react";
+import { toast } from "sonner";
 
 const Generator = () => {
   const { category = "startup" } = useParams();
@@ -22,6 +23,8 @@ const Generator = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [nameLength, setNameLength] = useState("any");
   const [nameStyle, setNameStyle] = useState("any");
+  const [usingCustomPrompt, setUsingCustomPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
 
   // Get category details
   const categoryObj = categories.find(cat => cat.slug === category);
@@ -38,6 +41,10 @@ const Generator = () => {
     updateDocumentMeta(seo);
     
     generateNewNames();
+    
+    // Reset custom prompt state when category changes
+    setUsingCustomPrompt(false);
+    setCustomPrompt("");
   }, [category]);
 
   const generateNewNames = () => {
@@ -47,7 +54,27 @@ const Generator = () => {
       const newNames = generateNames(category, 12);
       setNames(newNames);
       setLoading(false);
+      setUsingCustomPrompt(false);
     }, 800);
+  };
+
+  const generateFromCustomPrompt = (prompt: string) => {
+    if (!prompt.trim()) {
+      toast.error("Please enter a prompt to generate names");
+      return;
+    }
+
+    setLoading(true);
+    setCustomPrompt(prompt);
+    setUsingCustomPrompt(true);
+    
+    // Simulate API call with setTimeout
+    setTimeout(() => {
+      const newNames = generateFromPrompt(prompt, category, 12);
+      setNames(newNames);
+      setLoading(false);
+      toast.success("Names generated based on your prompt");
+    }, 1200);
   };
 
   const handleCategoryChange = (newCategory: string) => {
@@ -113,6 +140,8 @@ const Generator = () => {
     setSearchTerm("");
     setNameLength("any");
     setNameStyle("any");
+    setUsingCustomPrompt(false);
+    setCustomPrompt("");
     generateNewNames();
   };
 
@@ -140,12 +169,16 @@ const Generator = () => {
               onStyleChange={handleStyleChange}
               onSearch={handleSearch}
               onClearFilters={handleClearFilters}
+              onCustomPrompt={generateFromCustomPrompt}
             />
             
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">
-                Name Results
-                {searchTerm && ` for "${searchTerm}"`}
+                {usingCustomPrompt 
+                  ? `Names based on "${customPrompt}"` 
+                  : searchTerm 
+                    ? `Name Results for "${searchTerm}"` 
+                    : "Name Results"}
               </h2>
               <Button 
                 onClick={generateNewNames}
@@ -173,6 +206,9 @@ const Generator = () => {
                 <li>Check domain availability before finalizing your choice.</li>
                 <li>Avoid names that limit your growth or are too specific to one product.</li>
                 <li>Test your name with potential customers to gauge their first impression.</li>
+                {usingCustomPrompt && (
+                  <li>Custom prompts can help generate more targeted and relevant name ideas.</li>
+                )}
               </ul>
             </div>
           </div>

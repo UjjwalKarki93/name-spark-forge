@@ -1,5 +1,5 @@
 
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, Wand2 } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -16,6 +16,8 @@ import {
   CollapsibleContent, 
   CollapsibleTrigger 
 } from "@/components/ui/collapsible";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 interface NameFiltersProps {
   category: string;
@@ -24,6 +26,11 @@ interface NameFiltersProps {
   onStyleChange: (style: string) => void;
   onSearch: (search: string) => void;
   onClearFilters: () => void;
+  onCustomPrompt?: (prompt: string) => void;
+}
+
+interface CustomPromptFormValues {
+  prompt: string;
 }
 
 export function NameFilters({
@@ -32,14 +39,29 @@ export function NameFilters({
   onLengthChange,
   onStyleChange,
   onSearch,
-  onClearFilters
+  onClearFilters,
+  onCustomPrompt
 }: NameFiltersProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   
+  const customPromptForm = useForm<CustomPromptFormValues>({
+    defaultValues: {
+      prompt: "",
+    }
+  });
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchTerm);
+  };
+  
+  const handleCustomPromptSubmit = (values: CustomPromptFormValues) => {
+    if (onCustomPrompt) {
+      onCustomPrompt(values.prompt);
+      customPromptForm.reset();
+    }
   };
 
   return (
@@ -56,6 +78,16 @@ export function NameFilters({
           />
         </div>
         <Button type="submit">Search</Button>
+        
+        {/* Custom prompt toggle */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowCustomPrompt(!showCustomPrompt)}
+        >
+          <Wand2 className="h-4 w-4 mr-1" />
+          {showCustomPrompt ? "Hide" : "Custom"}
+        </Button>
         
         {/* Desktop collapsible filters */}
         <Collapsible 
@@ -137,6 +169,35 @@ export function NameFilters({
           </CollapsibleContent>
         </Collapsible>
       </form>
+      
+      {/* Custom prompt input */}
+      {showCustomPrompt && (
+        <div className="mt-4 border-t pt-4">
+          <Form {...customPromptForm}>
+            <form onSubmit={customPromptForm.handleSubmit(handleCustomPromptSubmit)} className="space-y-4">
+              <FormField
+                control={customPromptForm.control}
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Custom Prompt</FormLabel>
+                    <FormControl>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="E.g., a space-themed guild for fantasy games..."
+                          {...field}
+                          className="flex-1"
+                        />
+                        <Button type="submit">Generate</Button>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+      )}
 
       {/* Always visible on mobile */}
       <div className="mt-4 md:hidden">

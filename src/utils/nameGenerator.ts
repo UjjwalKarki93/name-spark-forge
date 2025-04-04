@@ -95,6 +95,71 @@ export function generateNames(category: string, count: number = 10): NameData[] 
 }
 
 /**
+ * Generate names based on user input prompt
+ */
+export function generateFromPrompt(prompt: string, category: string, count: number = 10): NameData[] {
+  // In a real implementation, this would use an AI service
+  // For now, we'll use the prompt to influence our random generation
+  
+  // Extract keywords from prompt (simple implementation)
+  const keywords = prompt.toLowerCase().split(/\s+/);
+  const names: NameData[] = [];
+  
+  // Get category data
+  const catPrefixes = prefixes[category] || prefixes.default;
+  const catSuffixes = suffixes[category] || suffixes.default;
+  
+  // Create a simple "influenced by prompt" algorithm
+  for (let i = 0; i < count; i++) {
+    let name = "";
+    
+    // Try to use a keyword if possible
+    if (keywords.length > 0 && Math.random() > 0.5) {
+      const keyword = getRandomItem(keywords);
+      const formattedKeyword = capitalize(keyword);
+      
+      // Choose random generation strategy
+      const strategy = Math.floor(Math.random() * 3);
+      
+      switch (strategy) {
+        case 0:
+          // Keyword + Suffix
+          name = formattedKeyword + getRandomItem(catSuffixes);
+          break;
+        case 1:
+          // Prefix + Keyword
+          name = getRandomItem(catPrefixes) + formattedKeyword;
+          break;
+        case 2:
+          // Use keyword as a component
+          if (keyword.length > 4) {
+            // Use part of the keyword
+            const part = keyword.substring(0, Math.min(keyword.length, 5));
+            name = capitalize(part) + getRandomItem(catSuffixes);
+          } else {
+            name = formattedKeyword + getRandomItem(catSuffixes);
+          }
+          break;
+      }
+    } else {
+      // Fall back to regular name generation
+      const prefix = getRandomItem(catPrefixes);
+      const suffix = getRandomItem(catSuffixes);
+      name = prefix + suffix;
+    }
+    
+    names.push({
+      id: generateId(),
+      name,
+      category,
+      length: name.length
+    });
+  }
+  
+  return names;
+}
+
+/**
  * Get trending names (mock data for now)
  */
 export function getTrendingNames(count: number = 15): NameData[] {
