@@ -33,12 +33,21 @@ export type Favorite = {
 export type Tables = {
   generated_names: {
     Row: GeneratedName;
+    Insert: Omit<GeneratedName, 'id' | 'created_at'> & { id?: string; created_at?: string };
+    Update: Partial<GeneratedName>;
+    Relationships: [];
   };
   profiles: {
     Row: Profile;
+    Insert: Profile;
+    Update: Partial<Profile>;
+    Relationships: [];
   };
   favorites: {
     Row: Favorite;
+    Insert: Omit<Favorite, 'id' | 'created_at'> & { id?: string; created_at?: string };
+    Update: Partial<Favorite>;
+    Relationships: [];
   };
 };
 
