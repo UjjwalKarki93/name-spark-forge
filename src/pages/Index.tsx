@@ -1,5 +1,4 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { HeroSection } from "@/components/HeroSection";
 import { CategoryCard, categories } from "@/components/CategoryCard";
 import { Header } from "@/components/Header";
@@ -11,12 +10,27 @@ import { getPageSeo, updateDocumentMeta } from "@/utils/seo";
 
 const Index = () => {
   // Generate some sample trending names for the homepage
-  const trendingNames: NameData[] = getTrendingNames(3);
+  const [trendingNames, setTrendingNames] = useState<NameData[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     // Update page metadata for SEO
     const seo = getPageSeo("home");
     updateDocumentMeta(seo);
+    
+    // Fetch trending names
+    const fetchTrendingNames = async () => {
+      try {
+        const names = await getTrendingNames(3);
+        setTrendingNames(names);
+      } catch (error) {
+        console.error("Failed to fetch trending names:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTrendingNames();
   }, []);
 
   return (
@@ -55,7 +69,7 @@ const Index = () => {
               </a>
             </div>
             
-            <NameList names={trendingNames} />
+            <NameList names={trendingNames} loading={loading} />
           </div>
         </section>
         

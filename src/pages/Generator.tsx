@@ -87,14 +87,24 @@ const Generator = () => {
     }
   };
 
-  const handleCategoryChange = (newCategory: string) => {
+  const handleCategoryChange = async (newCategory: string) => {
     if (newCategory === "all") {
       // When "All Categories" is selected, stay on the same page
       // and update with a mix of names (in a real implementation)
-      const mixedNames = categories.slice(0, 3).flatMap(cat => 
-        generateNames(cat.slug, 4)
-      );
-      setNames(mixedNames);
+      setLoading(true);
+      try {
+        const promises = categories.slice(0, 3).map(cat => 
+          generateNames(cat.slug, 4)
+        );
+        const nameArrays = await Promise.all(promises);
+        const mixedNames = nameArrays.flat();
+        setNames(mixedNames);
+      } catch (err) {
+        console.error("Error generating mixed names:", err);
+        setError("Failed to generate mixed names. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     } else {
       // Navigate to the selected category page
       navigate(`/generate/${newCategory}`);
@@ -111,9 +121,13 @@ const Generator = () => {
     const filteredNames = filterByLength(names, length);
     if (filteredNames.length < 3) {
       // Generate more names if filtered results are too few
-      const newNames = generateNames(category, 8);
-      const filtered = filterByLength(newNames, length);
-      setNames(prev => [...filtered, ...prev].slice(0, 12));
+      generateNames(category, 8).then(newNames => {
+        const filtered = filterByLength(newNames, length);
+        setNames(prev => [...filtered, ...prev].slice(0, 12));
+      }).catch(err => {
+        console.error("Error generating names for length filter:", err);
+        setError("Failed to generate names. Please try again.");
+      });
     } else {
       setNames(filteredNames);
     }
@@ -138,9 +152,13 @@ const Generator = () => {
     const searchResults = searchNames(names, term);
     if (searchResults.length === 0) {
       // If no results, generate new batch and search in those
-      const newBatch = generateNames(category, 20);
-      const newSearchResults = searchNames(newBatch, term);
-      setNames(newSearchResults.length > 0 ? newSearchResults : []);
+      generateNames(category, 20).then(newBatch => {
+        const newSearchResults = searchNames(newBatch, term);
+        setNames(newSearchResults.length > 0 ? newSearchResults : []);
+      }).catch(err => {
+        console.error("Error generating names for search:", err);
+        setError("Failed to search for names. Please try again.");
+      });
     } else {
       setNames(searchResults);
     }
