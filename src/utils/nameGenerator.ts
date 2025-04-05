@@ -1,5 +1,5 @@
-
 import { NameData } from "@/components/NameCard";
+import { supabase, GeneratedName } from "@/integrations/supabase/client";
 
 // Generate a unique ID
 const generateId = (): string => {
@@ -51,7 +51,54 @@ const roots: Record<string, string[]> = {
 /**
  * Generate random names for a specific category
  */
-export function generateNames(category: string, count: number = 10): NameData[] {
+export async function generateNames(category: string, count: number = 10): Promise<NameData[]> {
+  try {
+    // First try to fetch from database
+    const { data, error } = await supabase
+      .from('generated_names')
+      .select()
+      .eq('category', category)
+      .limit(count);
+    
+    if (error) {
+      console.error("Error fetching names from database:", error);
+      return fallbackGenerateNames(category, count);
+    }
+    
+    if (data && data.length >= count) {
+      // We have enough data from the database
+      return data.map(item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        length: item.length
+      }));
+    } else if (data && data.length > 0) {
+      // We have some data, but not enough
+      const dbNames = data.map(item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        length: item.length
+      }));
+      
+      // Generate more names to make up the difference
+      const additionalNames = fallbackGenerateNames(category, count - data.length);
+      return [...dbNames, ...additionalNames];
+    } else {
+      // No data found, use fallback
+      return fallbackGenerateNames(category, count);
+    }
+  } catch (err) {
+    console.error("Error in generateNames:", err);
+    return fallbackGenerateNames(category, count);
+  }
+}
+
+/**
+ * Fallback method to generate names when database fetch fails
+ */
+function fallbackGenerateNames(category: string, count: number = 10): NameData[] {
   const catPrefixes = prefixes[category] || prefixes.default;
   const catSuffixes = suffixes[category] || suffixes.default;
   const catRoots = roots[category] || roots.default;
@@ -97,11 +144,66 @@ export function generateNames(category: string, count: number = 10): NameData[] 
 /**
  * Generate names based on user input prompt
  */
-export function generateFromPrompt(prompt: string, category: string, count: number = 10): NameData[] {
-  // In a real implementation, this would use an AI service
-  // For now, we'll use the prompt to influence our random generation
-  
-  // Extract keywords from prompt (simple implementation)
+export async function generateFromPrompt(prompt: string, category: string, count: number = 10): Promise<NameData[]> {
+  try {
+    // Try to find names in the database that match the keywords in the prompt
+    const keywords = prompt.toLowerCase().split(/\s+/);
+    
+    // Build a query to find names containing any of the keywords
+    const { data, error } = await supabase
+      .from('generated_names')
+      .select()
+      .eq('category', category)
+      .limit(count * 2); // Get extra results to increase chance of finding matches
+    
+    if (error) {
+      console.error("Error fetching names for prompt:", error);
+      return fallbackGenerateFromPrompt(prompt, category, count);
+    }
+    
+    if (data && data.length > 0) {
+      // Filter names that contain any of the keywords
+      const matchedNames = data.filter(item => 
+        keywords.some(keyword => 
+          item.name.toLowerCase().includes(keyword)
+        )
+      );
+      
+      if (matchedNames.length >= count) {
+        // We have enough matches
+        return matchedNames.slice(0, count).map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          length: item.length
+        }));
+      } else if (matchedNames.length > 0) {
+        // We have some matches, but not enough
+        const dbNames = matchedNames.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          length: item.length
+        }));
+        
+        // Generate more names to make up the difference
+        const additionalNames = fallbackGenerateFromPrompt(prompt, category, count - matchedNames.length);
+        return [...dbNames, ...additionalNames];
+      }
+    }
+    
+    // No matches found, use fallback
+    return fallbackGenerateFromPrompt(prompt, category, count);
+  } catch (err) {
+    console.error("Error in generateFromPrompt:", err);
+    return fallbackGenerateFromPrompt(prompt, category, count);
+  }
+}
+
+/**
+ * Fallback method for prompt-based generation
+ */
+function fallbackGenerateFromPrompt(prompt: string, category: string, count: number): NameData[] {
   const keywords = prompt.toLowerCase().split(/\s+/);
   const names: NameData[] = [];
   
@@ -160,15 +262,49 @@ export function generateFromPrompt(prompt: string, category: string, count: numb
 }
 
 /**
- * Get trending names (mock data for now)
+ * Get trending names from database
  */
-export function getTrendingNames(count: number = 15): NameData[] {
+export async function getTrendingNames(count: number = 15): Promise<NameData[]> {
+  try {
+    // Fetch trending names from database, ordered by trending_score
+    const { data, error } = await supabase
+      .from('generated_names')
+      .select()
+      .order('trending_score', { ascending: false })
+      .limit(count);
+    
+    if (error) {
+      console.error("Error fetching trending names:", error);
+      return fallbackGetTrendingNames(count);
+    }
+    
+    if (data && data.length > 0) {
+      return data.map(item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        length: item.length
+      }));
+    } else {
+      // No data found, use fallback
+      return fallbackGetTrendingNames(count);
+    }
+  } catch (err) {
+    console.error("Error in getTrendingNames:", err);
+    return fallbackGetTrendingNames(count);
+  }
+}
+
+/**
+ * Fallback method to get trending names when database fetch fails
+ */
+function fallbackGetTrendingNames(count: number = 15): NameData[] {
   const trendingCategories = Object.keys(prefixes);
   const names: NameData[] = [];
   
   for (let i = 0; i < count; i++) {
     const randomCategory = getRandomItem(trendingCategories);
-    const nameList = generateNames(randomCategory, 1);
+    const nameList = fallbackGenerateNames(randomCategory, 1);
     names.push(nameList[0]);
   }
   

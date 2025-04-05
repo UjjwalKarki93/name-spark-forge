@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const Trending = () => {
   const [names, setNames] = useState<NameData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState("today");
   
   useEffect(() => {
@@ -23,42 +24,55 @@ const Trending = () => {
     loadTrendingNames();
   }, []);
 
-  const loadTrendingNames = () => {
+  const loadTrendingNames = async () => {
     setLoading(true);
-    // Simulate API call delay
-    setTimeout(() => {
-      const trendingNames = getTrendingNames(18);
+    setError(null);
+    try {
+      const trendingNames = await getTrendingNames(18);
       setNames(trendingNames);
+    } catch (err) {
+      console.error("Error loading trending names:", err);
+      setError("Failed to load trending names. Please try again later.");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = async (category: string) => {
     setLoading(true);
-    // Simulate filtering by category
-    setTimeout(() => {
+    try {
       if (category === "all") {
-        loadTrendingNames();
+        await loadTrendingNames();
       } else {
-        const filteredNames = getTrendingNames(12).filter(
+        const trendingNames = await getTrendingNames(18);
+        const filteredNames = trendingNames.filter(
           name => name.category === category
         );
-        setNames(filteredNames);
+        setNames(filteredNames.length > 0 ? filteredNames : []);
       }
+    } catch (err) {
+      console.error("Error filtering trending names:", err);
+      setError("Failed to filter names. Please try again later.");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  const handleTimeframeChange = (time: string) => {
+  const handleTimeframeChange = async (time: string) => {
     setTimeframe(time);
     setLoading(true);
-    // Simulate API call with different data based on timeframe
-    setTimeout(() => {
+    try {
+      // In a real implementation, this would use different API parameters
+      // For now, we simulate by adjusting the count
       const count = time === "today" ? 18 : time === "week" ? 15 : 12;
-      const trendingNames = getTrendingNames(count);
+      const trendingNames = await getTrendingNames(count);
       setNames(trendingNames);
+    } catch (err) {
+      console.error("Error loading timeframe data:", err);
+      setError("Failed to load data for the selected timeframe.");
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   const handleSearch = (searchTerm: string) => {
@@ -86,6 +100,12 @@ const Trending = () => {
                 Explore popular and trending names across different categories. Get inspired by what's working for others.
               </p>
             </div>
+            
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
             
             <div className="mb-6">
               <Tabs defaultValue="today" onValueChange={handleTimeframeChange}>

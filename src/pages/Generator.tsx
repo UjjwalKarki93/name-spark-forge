@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ const Generator = () => {
   
   const [names, setNames] = useState<NameData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [nameLength, setNameLength] = useState("any");
   const [nameStyle, setNameStyle] = useState("any");
@@ -49,34 +49,42 @@ const Generator = () => {
     setCustomPrompt("");
   }, [category]);
 
-  const generateNewNames = () => {
+  const generateNewNames = async () => {
     setLoading(true);
-    // Simulate API call with setTimeout
-    setTimeout(() => {
-      const newNames = generateNames(category, 12);
+    setError(null);
+    try {
+      const newNames = await generateNames(category, 12);
       setNames(newNames);
-      setLoading(false);
       setUsingCustomPrompt(false);
-    }, 800);
+    } catch (err) {
+      console.error("Error generating names:", err);
+      setError("Failed to generate names. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const generateFromCustomPrompt = (prompt: string) => {
+  const generateFromCustomPrompt = async (prompt: string) => {
     if (!prompt.trim()) {
       toast.error("Please enter a prompt to generate names");
       return;
     }
 
     setLoading(true);
+    setError(null);
     setCustomPrompt(prompt);
     setUsingCustomPrompt(true);
     
-    // Simulate API call with setTimeout
-    setTimeout(() => {
-      const newNames = generateFromPrompt(prompt, category, 12);
+    try {
+      const newNames = await generateFromPrompt(prompt, category, 12);
       setNames(newNames);
-      setLoading(false);
       toast.success("Names generated based on your prompt");
-    }, 1200);
+    } catch (err) {
+      console.error("Error generating names from prompt:", err);
+      setError("Failed to generate names from your prompt.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCategoryChange = (newCategory: string) => {

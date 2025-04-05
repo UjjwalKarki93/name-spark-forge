@@ -1,9 +1,11 @@
 
 import { useEffect, useState } from "react";
 import { NameData } from "@/components/NameCard";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<NameData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Load favorites from localStorage on mount
@@ -16,6 +18,7 @@ export function useFavorites() {
         localStorage.removeItem("favorites");
       }
     }
+    setLoading(false);
   }, []);
 
   const addFavorite = (nameData: NameData) => {
@@ -39,5 +42,5 @@ export function useFavorites() {
     localStorage.removeItem("favorites");
   };
 
-  return { favorites, addFavorite, removeFavorite, clearFavorites };
+  return { favorites, loading, addFavorite, removeFavorite, clearFavorites };
 }
